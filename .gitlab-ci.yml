@@ -37,6 +37,25 @@ test:
       junit:
         - target/surefire-reports/TEST-*.xml
 
+code_quality:
+  stage: test
+  image: docker:stable
+  variables:
+    DOCKER_DRIVER: overlay2
+    SP_VERSION: 0.85.6
+  allow_failure: true
+  services:
+    - docker:stable-dind
+  script:
+    - docker run
+      --env SOURCE_CODE="$PWD"
+      --volume "$PWD":/code
+      --volume /var/run/docker.sock:/var/run/docker.sock
+      "registry.gitlab.com/gitlab-org/ci-cd/codequality:$SP_VERSION" /code
+  artifacts:
+    reports:
+      codequality: gl-code-quality-report.json
+
 ktlint:
   image: kkopper/ktlint:0.36.0
   stage: lint
